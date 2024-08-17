@@ -99,32 +99,32 @@ class Generator(nn.Module):
          
         return emb
     
-    # wav经过codec 得到token
+    # wav缁忚繃codec 寰楀埌token
     @torch.no_grad()
     def encode(self, wav):
         
-        token = self.codec.encode(wav, bw=-1).squeeze(-1)
+        token = self.codec.encode(wav) 
         return token
     
-    # token转wav 
+    # token杞瑆av 
     @torch.no_grad()
     def decode(self, token):
-        audio_values = self.codec(token.unsqueeze(-1), bw=-1)
+        audio_values = self.codec(token)
         return audio_values
 
     
     def forward(self, eeg, audio): 
-        #经过codec得到低采样率的token
-        #code_l = self.encode(wav_l) # b tokennum
+       
+      
         audio_code = self.encode(audio)    
-        #print(eeg.shape) 
-        eeg = eeg.view(eeg.shape[0],62,-1,200)
-        #print(eeg.shape)
-        eeg = getembedding(eeg)#self.embedding(eeg,63,None).unsqueeze(1).contiguous() #.transpose(-1,-2).contiguous() 
-        eeg  = self.eegproj(eeg)
-        #lr_emb = self.embdding(code_l)  #b tokennum 1024
         
-        pred_s = self.vqdiffusion(x0 = audio_code, condi = eeg)   #inpt hr [b 200]  lr emb[b, 200 1024]
+        eeg = eeg.view(eeg.shape[0],62,-1,200)
+      
+        eeg = self.getembedding(eeg)#self.embedding(eeg,63,None).unsqueeze(1).contiguous() #.transpose(-1,-2).contiguous() 
+        eeg  = self.eegproj(eeg)
+       
+        
+        pred_s = self.vqdiffusion(x0 = audio_code, condi = eeg)   
         return pred_s['loss']
 
     def p_sample_with_truncation(self, func, sample_type):
@@ -186,12 +186,12 @@ class Generator(nn.Module):
         
         self.eval()
         
-        eeg = batch#self.encode(batch)
+        eeg = batch 
         eeg = eeg.view(eeg.shape[0],62,-1,200)
-        #print(eeg.shape)
-        eeg = getembedding(eeg)#self.embedding(eeg,63,None).unsqueeze(1).contiguous() #.transpose(-1,-2).contiguous() 
+      
+        eeg = self.getembedding(eeg)#self.embedding(eeg,63,None).unsqueeze(1).contiguous() #.transpose(-1,-2).contiguous() 
         eeg  = self.eegproj(eeg)
-        #eeg = self.embedding(eeg).transpose(-1,-2) #b 100 512
+     
         batchsize = eeg.size(0)
         
         #eeg = codelr.view(batchsize,-1)
@@ -212,9 +212,7 @@ class Generator(nn.Module):
         if len(sample_type.split(',')) > 1: # using r,fast
             if sample_type.split(',')[1][:1]=='q':
                 self.decoder.p_sample = self.p_sample_with_truncation(self.decoder.p_sample, sample_type.split(',')[1])
-        
-        
-        #我们只用了下面这个predict_start_with_truncation + self.vqdiffusion.sample 这样采样100步的方式
+         
         
         if sample_type.split(',')[0][:3] == "top" and self.truncation_forward == False:              
             self.vqdiffusion.predict_start = self.predict_start_with_truncation(self.vqdiffusion.predict_start, sample_type.split(',')[0])
@@ -247,11 +245,11 @@ class Generator(nn.Module):
         
         
         
-        decoderout = trans_out['content_token']    #这里得到的是预测的code
+        decoderout = trans_out['content_token']    
         
         
          
-        predicted_wav = self.decode(decoderout)  #经过codec的解码器得到wav输出
+        predicted_wav = self.decode(decoderout)  
         
      
         self.train()
@@ -278,6 +276,6 @@ if __name__ == '__main__':
     '''
     from thop import profile
     macs, params = profile(model, inputs = (features,target_features))
-    print('MACs:', macs/2**30, '[G] Params:', params/2**10,'[k × 4 Bytes]')
+    print('MACs:', macs/2**30, '[G] Params:', params/2**10,'[k 脳 4 Bytes]')
     '''
 
