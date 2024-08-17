@@ -1,2 +1,2 @@
 # VQDiffusion-for-eeg2wav-using-labram
-我们实现了一个使用VQDiffusion实现的EEG2Wav的模型。其中EEG特征使用预训练模型Labram提取。
+We implemented an EEG2Wav model using VQDiffusion. The EEG features were extracted using the pre-trained model Labram.
